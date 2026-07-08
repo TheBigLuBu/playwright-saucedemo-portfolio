@@ -96,4 +96,12 @@ test.describe('Sorting List', () => {
         for (let i = 0; i < names.length - 1; i++) {
         expect(names[i].localeCompare(names[i + 1])).toBeLessThanOrEqual(0);
 }});
+   test('Inverted Alphabetical order listing ', async ({ page }) => {
+    await page.locator('[data-test="username"]').fill('standard_user');
+    await page.locator('[data-test="login-button"]').click();
+    await page.locator('[data-test="product-sort-container"]').selectOption('za');
+        const names = await page.locator('[data-test="inventory-item-name"]').allTextContents();
+        for (let i = 0; i < names.length - 1; i++) {
+        expect(names[i].localeCompare(names[i + 1])).toBeGreaterThanOrEqual(0);
+}});
 });
