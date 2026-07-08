@@ -79,6 +79,15 @@ test.describe('Sorting List', () => {
         for (let i = 0; i < prices.length - 1; i++) {
         expect(prices[i]).toBeLessThanOrEqual(prices[i + 1]);
 }});
+  test('Highest to Lowest price', async ({ page }) => {
+    await page.locator('[data-test="username"]').fill('standard_user');
+    await page.locator('[data-test="login-button"]').click();
+    await page.locator('[data-test="product-sort-container"]').selectOption('hilo');
+      const priceTexts = await page.locator('[data-test="inventory-item-price"]').allTextContents();
+      const prices = priceTexts.map(text => parseFloat(text.replace('$', '')));
+        for (let i = 0; i < prices.length - 1; i++) {
+        expect(prices[i]).toBeGreaterThanOrEqual(prices[i + 1]);
+}});        
    test('Alphabetical order listing ', async ({ page }) => {
     await page.locator('[data-test="username"]').fill('standard_user');
     await page.locator('[data-test="login-button"]').click();
