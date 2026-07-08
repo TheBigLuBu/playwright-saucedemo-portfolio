@@ -105,3 +105,12 @@ test.describe('Sorting List', () => {
         expect(names[i].localeCompare(names[i + 1])).toBeGreaterThanOrEqual(0);
 }});
 });
+test.describe('Hamburger button', () => {
+  test('Logout', async ({ page }) => {
+    await page.locator('[data-test="username"]').fill('standard_user');
+    await page.locator('[data-test="login-button"]').click();
+    await page.locator('#react-burger-menu-btn').click();
+    await page.locator('[data-test="logout-sidebar-link"]').click();
+    await expect(page).toHaveURL('https://www.saucedemo.com');
+});
+});
