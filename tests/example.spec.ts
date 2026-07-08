@@ -69,3 +69,22 @@ test.describe('Continue Shopping', () => {
     await expect(page.locator('[data-test="title"]')).toHaveText('Products');
 });
 });
+test.describe('Sorting List', () => {
+  test('Lowest to Highest price', async ({ page }) => {
+    await page.locator('[data-test="username"]').fill('standard_user');
+    await page.locator('[data-test="login-button"]').click();
+    await page.locator('[data-test="product-sort-container"]').selectOption('lohi');
+      const priceTexts = await page.locator('[data-test="inventory-item-price"]').allTextContents();
+      const prices = priceTexts.map(text => parseFloat(text.replace('$', '')));
+        for (let i = 0; i < prices.length - 1; i++) {
+        expect(prices[i]).toBeLessThanOrEqual(prices[i + 1]);
+}});
+   test('Alphabetical order listing ', async ({ page }) => {
+    await page.locator('[data-test="username"]').fill('standard_user');
+    await page.locator('[data-test="login-button"]').click();
+    await page.locator('[data-test="product-sort-container"]').selectOption('az');
+        const names = await page.locator('[data-test="inventory-item-name"]').allTextContents();
+        for (let i = 0; i < names.length - 1; i++) {
+        expect(names[i].localeCompare(names[i + 1])).toBeLessThanOrEqual(0);
+}});
+});
