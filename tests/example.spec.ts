@@ -161,3 +161,4 @@ test.describe('Item Detail Page', () => {
     await expect(page).toHaveURL('https://www.saucedemo.com/inventory.html');
 });
 });
+// comment to check if issue comes from githu.
