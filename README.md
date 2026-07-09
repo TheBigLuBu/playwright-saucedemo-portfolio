@@ -1,4 +1,4 @@
-#Playwright SauceDemo Portfolio
+# Playwright SauceDemo Portfolio
 
 🇬🇧 English | 🇫🇷 Français
 
