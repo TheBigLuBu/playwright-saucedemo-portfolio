@@ -58,6 +58,30 @@ test.describe('Checkout', () => {
     await expect(page.locator('[data-test="complete-header"]')).toHaveText('Thank you for your order!');
 });
 });
+test.describe('Checkout', () => {
+test('informations missing', async ({ page }) => {
+    await page.locator('[data-test="username"]').fill('standard_user');
+    await page.locator('[data-test="login-button"]').click();
+    await page.locator('[data-test="shopping-cart-link"]').click();
+    await page.locator('[data-test="checkout"]').click();
+    await page.locator('[data-test="continue"]').click();
+    await expect(page.locator('[data-test="error"]')).toHaveText('Error: First Name is required');
+});
+  test('Canceling checkout', async ({ page }) => {
+    await page.locator('[data-test="username"]').fill('standard_user');
+    await page.locator('[data-test="login-button"]').click();
+    await page.locator('[data-test="add-to-cart-sauce-labs-backpack"]').click();
+    await page.locator('[data-test="shopping-cart-link"]').click();
+    await page.locator('[data-test="checkout"]').click();
+    await page.locator('[data-test="firstName"]').fill('Sebastien');
+    await page.locator('[data-test="lastName"]').fill('chup');
+    await page.locator('[data-test="postalCode"]').fill('60300');
+    await page.locator('[data-test="continue"]').click();
+    await page.locator('[data-test="cancel"]').click();
+    await expect(page).toHaveURL('https://www.saucedemo.com/inventory.html');
+    await expect(page.locator('[data-test="shopping-cart-badge"]')).toHaveText('1');  
+    });
+    });
 test.describe('Continue Shopping', () => {
     test('Go back to Shopping items list', async ({ page }) => {
     await page.locator('[data-test="username"]').fill('standard_user');
@@ -112,5 +136,28 @@ test.describe('Hamburger button', () => {
     await page.locator('#react-burger-menu-btn').click();
     await page.locator('[data-test="logout-sidebar-link"]').click();
     await expect(page).toHaveURL('https://www.saucedemo.com');
+});
+test('Is Reset App state working properly', async ({ page }) => {
+    await page.locator('[data-test="username"]').fill('standard_user');
+    await page.locator('[data-test="login-button"]').click();
+    await page.locator('[data-test="add-to-cart-sauce-labs-backpack"]').click();
+    await expect(page.locator('[data-test="shopping-cart-badge"]')).toHaveText('1');
+    await page.locator('#react-burger-menu-btn').click();
+    await page.locator('[data-test="reset-sidebar-link"]').click();
+    await expect(page.locator('[data-test="shopping-cart-badge"]')).not.toBeVisible();
+});
+});
+test.describe('Item Detail Page', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.locator('[data-test="username"]').fill('standard_user');
+    await page.locator('[data-test="login-button"]').click();
+    await page.locator('[data-test="item-4-title-link"]').click();
+});
+  test('should show item detail page', async ({ page }) => {
+    await expect(page).toHaveURL(/inventory-item.html/);
+});
+  test('should return to product list', async ({ page }) => {
+    await page.locator('[data-test="back-to-products"]').click();
+    await expect(page).toHaveURL('https://www.saucedemo.com/inventory.html');
 });
 });
