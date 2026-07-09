@@ -1,9 +1,9 @@
-# Playwright SauceDemo Portfolio
+## Playwright SauceDemo Portfolio
 
 🇬🇧 English | 🇫🇷 Français
 
 
-English
+# English
 
 Automated end-to-end test suite for SauceDemo, a demo e-commerce site, built with Playwright. With over 20 years of experience as a QA Manager/Lead QA in the video game industry, I'm expanding my skill set to include test automation. This project demonstrates my ability to design, write, and organize automated tests from scratch.
 
@@ -43,7 +43,7 @@ example.spec.ts   # all test suites, organized with test.describe()
 playwright.config.ts
 
 
-Français
+# Français
 
 Suite de tests automatisés de bout en bout pour SauceDemo, un site e-commerce de démonstration, réalisée avec Playwright. Fort de plus de 20 ans d'expérience en tant que QA Manager/Lead QA dans l'industrie du jeu vidéo, j'élargis mes compétences à l'automatisation de tests. Ce projet illustre ma capacité à concevoir, écrire et organiser des tests automatisés à partir de zéro.
 
