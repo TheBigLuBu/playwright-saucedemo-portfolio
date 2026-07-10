@@ -100,6 +100,24 @@ test('Postal code missing', async ({ page }) => {
     await expect(page).toHaveURL('https://www.saucedemo.com/inventory.html');
     await expect(page.locator('[data-test="shopping-cart-badge"]')).toHaveText('1');  
     });
+    test('Checking total price', async ({ page }) => {
+    await page.locator('[data-test="username"]').fill('standard_user');
+    await page.locator('[data-test="login-button"]').click();
+    await page.locator('[data-test="add-to-cart-sauce-labs-backpack"]').click();
+    await page.locator('[data-test="shopping-cart-link"]').click();
+    await page.locator('[data-test="checkout"]').click();
+    await page.locator('[data-test="firstName"]').fill('Sebastien');
+    await page.locator('[data-test="lastName"]').fill('chup');
+    await page.locator('[data-test="postalCode"]').fill('60300');
+    await page.locator('[data-test="continue"]').click();
+      const subtotalText = await page.locator('[data-test="subtotal-label"]').textContent();
+      const subtotal = parseFloat(subtotalText.split('$')[1]);
+      const taxText = await page.locator('[data-test="tax-label"]').textContent();
+      const tax = parseFloat(taxText.split('$')[1]);
+      const totalText = await page.locator('[data-test="total-label"]').textContent();
+      const total = parseFloat(totalText.split('$')[1]);
+      expect(subtotal + tax).toBeCloseTo(total, 2);
+    });
     });
 test.describe('Continue Shopping', () => {
     test('Go back to Shopping items list', async ({ page }) => {
