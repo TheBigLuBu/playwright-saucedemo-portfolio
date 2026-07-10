@@ -59,7 +59,7 @@ test.describe('Checkout', () => {
 });
 });
 test.describe('Checkout', () => {
-test('informations missing', async ({ page }) => {
+test('First Namem missing', async ({ page }) => {
     await page.locator('[data-test="username"]').fill('standard_user');
     await page.locator('[data-test="login-button"]').click();
     await page.locator('[data-test="shopping-cart-link"]').click();
@@ -67,6 +67,25 @@ test('informations missing', async ({ page }) => {
     await page.locator('[data-test="continue"]').click();
     await expect(page.locator('[data-test="error"]')).toHaveText('Error: First Name is required');
 });
+test('Last name missing', async ({ page }) => {
+    await page.locator('[data-test="username"]').fill('standard_user');
+    await page.locator('[data-test="login-button"]').click();
+    await page.locator('[data-test="shopping-cart-link"]').click();
+    await page.locator('[data-test="checkout"]').click();
+    await page.locator('[data-test="firstName"]').fill('chup');
+    await page.locator('[data-test="continue"]').click();
+    await expect(page.locator('[data-test="error"]')).toHaveText('Error: Last Name is required');
+});
+test('Postal code missing', async ({ page }) => {
+    await page.locator('[data-test="username"]').fill('standard_user');
+    await page.locator('[data-test="login-button"]').click();
+    await page.locator('[data-test="shopping-cart-link"]').click();
+    await page.locator('[data-test="checkout"]').click();
+    await page.locator('[data-test="firstName"]').fill('chup');
+    await page.locator('[data-test="lastName"]').fill('chup');
+    await page.locator('[data-test="continue"]').click();
+    await expect(page.locator('[data-test="error"]')).toHaveText('Error: Postal Code is required');
+});        
   test('Canceling checkout', async ({ page }) => {
     await page.locator('[data-test="username"]').fill('standard_user');
     await page.locator('[data-test="login-button"]').click();
@@ -161,4 +180,3 @@ test.describe('Item Detail Page', () => {
     await expect(page).toHaveURL('https://www.saucedemo.com/inventory.html');
 });
 });
-// comment to check if issue comes from githu.
