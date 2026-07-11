@@ -181,6 +181,13 @@ test.describe('Hamburger button', () => {
     await page.locator('[data-test="about-sidebar-link"]').click();
     await expect(page).toHaveURL('https://saucelabs.com/');
 });
+  test('All items button', async ({ page }) => {
+    await page.locator('[data-test="username"]').fill('standard_user');
+    await page.locator('[data-test="login-button"]').click();
+    await page.locator('#react-burger-menu-btn').click();
+    await page.locator('[data-test="inventory-sidebar-link"]').click();
+    await expect(page).toHaveURL('https://www.saucedemo.com/inventory.html');
+});    
 test('Is Reset App state working properly', async ({ page }) => {
     await page.locator('[data-test="username"]').fill('standard_user');
     await page.locator('[data-test="login-button"]').click();
