@@ -45,7 +45,7 @@ test.describe('Checkout', () => {
 });
 });
 test.describe('Checkout', () => {
-test('First Namem missing', async ({ page }) => {
+test('First Name missing', async ({ page }) => {
     await page.locator('[data-test="username"]').fill('standard_user');
     await page.locator('[data-test="login-button"]').click();
     await page.locator('[data-test="shopping-cart-link"]').click();
@@ -53,7 +53,7 @@ test('First Namem missing', async ({ page }) => {
     await page.locator('[data-test="continue"]').click();
     await expect(page.locator('[data-test="error"]')).toHaveText('Error: First Name is required');
 });
-test('Last name missing', async ({ page }) => {
+test('Last Name missing', async ({ page }) => {
     await page.locator('[data-test="username"]').fill('standard_user');
     await page.locator('[data-test="login-button"]').click();
     await page.locator('[data-test="shopping-cart-link"]').click();
@@ -62,7 +62,7 @@ test('Last name missing', async ({ page }) => {
     await page.locator('[data-test="continue"]').click();
     await expect(page.locator('[data-test="error"]')).toHaveText('Error: Last Name is required');
 });
-test('Postal code missing', async ({ page }) => {
+test('Postal Code missing', async ({ page }) => {
     await page.locator('[data-test="username"]').fill('standard_user');
     await page.locator('[data-test="login-button"]').click();
     await page.locator('[data-test="shopping-cart-link"]').click();
@@ -197,4 +197,121 @@ test.describe('Item Detail Page', () => {
     await page.locator('[data-test="back-to-products"]').click();
     await expect(page).toHaveURL('https://www.saucedemo.com/inventory.html');
 });
+});
+test.describe('Problem_user bugs', () => {
+  test('About button', async ({ page }) => {
+    await page.locator('[data-test="username"]').fill('problem_user');
+    await page.locator('[data-test="login-button"]').click();
+    await page.locator('#react-burger-menu-btn').click();
+    await page.locator('[data-test="about-sidebar-link"]').click();
+    await expect(page).toHaveURL('https://saucelabs.com/error/404');
+});
+});
+test('Items Pictures should match each item', async ({ page }) => {
+  test.fail(); // This test should fail, as the only pictures displayed is the same for all the items.
+  await page.locator('[data-test="username"]').fill('problem_user');
+  await page.locator('[data-test="login-button"]').click();
+  
+  const backpackImg = await page.locator('[data-test="inventory-item-sauce-labs-backpack-img"]').getAttribute('src');
+  const bikeLightImg = await page.locator('[data-test="inventory-item-sauce-labs-bike-light-img"]').getAttribute('src');
+  
+  expect(backpackImg).not.toBe(bikeLightImg);
+});
+test('Lowest to Highest price should work correctly', async ({ page }) => {
+  test.fail(); // This test should fail because the sort function doesn't work.
+
+  await page.locator('[data-test="username"]').fill('problem_user');
+  await page.locator('[data-test="login-button"]').click();
+  await page.locator('[data-test="product-sort-container"]').selectOption('lohi');
+
+  const priceTexts = await page.locator('[data-test="inventory-item-price"]').allTextContents();
+  const prices = priceTexts.map(text => parseFloat(text.replace('$', '')));
+
+  for (let i = 0; i < prices.length - 1; i++) {
+    expect(prices[i]).toBeLessThanOrEqual(prices[i + 1]);
+  }
+});
+test('3 known-working products can be added to cart', async ({ page }) => {
+  await page.locator('[data-test="username"]').fill('problem_user');
+  await page.locator('[data-test="login-button"]').click();
+
+  await page.locator('[data-test="add-to-cart-sauce-labs-backpack"]').click();
+  await page.locator('[data-test="add-to-cart-sauce-labs-bike-light"]').click();
+  await page.locator('[data-test="add-to-cart-sauce-labs-onesie"]').click();
+
+  await expect(page.locator('[data-test="shopping-cart-badge"]')).toHaveText('3');
+});
+
+test('All 6 products should be addable to cart', async ({ page }) => {
+  test.fail(); // This test should fail as only some of the items are added to cart
+  await page.locator('[data-test="username"]').fill('problem_user');
+  await page.locator('[data-test="login-button"]').click();
+
+  await page.locator('[data-test="add-to-cart-sauce-labs-backpack"]').click();
+  await page.locator('[data-test="add-to-cart-sauce-labs-bike-light"]').click();
+  await page.locator('[data-test="add-to-cart-sauce-labs-onesie"]').click();
+  await page.locator('[data-test="add-to-cart-sauce-labs-bolt-t-shirt"]').click();
+  await page.locator('[data-test="add-to-cart-sauce-labs-fleece-jacket"]').click();
+  await page.locator('[data-test="add-to-cart-test.allthethings()-t-shirt-(red)"]').click();
+
+  await expect(page.locator('[data-test="shopping-cart-badge"]')).toHaveText('6');
+});
+test('Remove button should work properly', async ({ page }) => {
+  test.fail(); // This test should fail because the Remove button does not work at all.
+
+  await page.locator('[data-test="username"]').fill('problem_user');
+  await page.locator('[data-test="login-button"]').click();
+  await page.locator('[data-test="add-to-cart-sauce-labs-backpack"]').click();
+  await expect(page.locator('[data-test="shopping-cart-badge"]')).toHaveText('1');
+  await page.locator('[data-test="remove-sauce-labs-backpack"]').click();
+  await expect(page.locator('[data-test="shopping-cart-badge"]')).not.toBeVisible();
+  });
+test('Item description should match the right item', async ({ page }) => {
+  test.fail(); // This test should fail because clicking a product's title leads to a mismatched or missing product page
+
+  await page.locator('[data-test="username"]').fill('problem_user');
+  await page.locator('[data-test="login-button"]').click();
+
+  const itemCount = await page.locator('.inventory_item_name').count();
+  // .count() : compte combien d'éléments correspondent au sélecteur (ici, 
+  // combien de titres de produits il y a — normalement 6). Ça évite d'écrire "6" en dur.
+
+  for (let i = 0; i < itemCount; i++) {
+    const expectedName = await page.locator('.inventory_item_name').nth(i).textContent();
+    await page.locator('.inventory_item_name').nth(i).click();
+    // .nth(i) : quand un sélecteur cible plusieurs éléments (comme .inventory_item_name, 
+    // qui matche les 6 titres), .nth(i) permet de choisir le i-ème élément précisément 
+    // (le premier, le deuxième, etc.). Sans ça, Playwright ne saurait pas lequel des 6 on veux cibler.
+
+    const actualName = await page.locator('[data-test="inventory-item-name"]').textContent();
+    expect(actualName).toBe(expectedName);
+
+    await page.goBack();
+    // page.goBack() : équivalent du bouton "précédent" du navigateur — pour revenir sur la page Inventory 
+    // après chaque clic, et pouvoir tester le produit suivant dans la boucle.
+  }
+});
+test('Add to cart from item detail page should reliably update the cart', async ({ page }) => {
+  test.fail(); // This test should fail because the badge count doesn't always match what's actually in the cart
+
+  await page.locator('[data-test="username"]').fill('problem_user');
+  await page.locator('[data-test="login-button"]').click();
+
+  const itemCount = await page.locator('.inventory_item_name').count();
+
+  for (let i = 0; i < itemCount; i++) {
+    await page.locator('.inventory_item_name').nth(i).click();
+    await page.locator('[data-test="add-to-cart"]').click();
+    await page.goBack();
+  }
+
+  const badgeText = await page.locator('[data-test="shopping-cart-badge"]').textContent();
+
+  await page.locator('[data-test="shopping-cart-link"]').click();
+  const actualItemsInCart = await page.locator('.inventory_item_name').count();
+
+  expect(actualItemsInCart).toBe(Number(badgeText));
+  //Number(badgeText). Le badge renvoie du texte (.textContent() donne toujours une chaîne, genre "4"),
+  //  mais actualItemsInCart (résultat de .count()) est un vrai nombre. Pour comparer les deux avec .toBe(...),
+  //  il faut qu'ils soient du même type — Number(...) convertit le texte "4" en nombre 4.
 });
