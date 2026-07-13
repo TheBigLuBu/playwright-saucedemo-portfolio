@@ -14,7 +14,7 @@ Automated end-to-end test suite for [SauceDemo](https://www.saucedemo.com), a de
 - Node.js
 - GitHub Actions (CI/CD)
 
-### Test coverage (66 tests across 3 browsers)
+### Test coverage (93 tests across 3 browsers)
 
 - **Login** — successful login and locked-out user error handling
 - **Cart badge** — adding a single product, adding multiple products, removing a product
@@ -23,6 +23,7 @@ Automated end-to-end test suite for [SauceDemo](https://www.saucedemo.com), a de
 - **Sorting** — all 4 sort options (price low-to-high, high-to-low, name A-Z, Z-A), verified with a loop over every item
 - **Hamburger menu** — logout, reset app state, About link, and All Items navigation
 - **Item detail page** — navigating to a product's detail page and back to the product list
+- **Problem_user bugs** — 9 tests documenting known defects on the `problem_user` account (broken sort, inconsistent add-to-cart behaviour across products, cart badge not reflecting actual cart contents, duplicated field IDs on checkout causing First/Last Name to overwrite each other, broken "About" link, mismatched product detail pages, and more). Each test uses Playwright's `test.fail()` with an explanatory comment, so it reports green while the bug is present and would flag red the day it gets fixed — acting as living regression documentation rather than a one-off manual check
 
 ### Ongoing refactor: Page Object Model (POM)
 
@@ -75,7 +76,7 @@ Suite de tests automatisés de bout en bout pour [SauceDemo](https://www.saucede
 - Node.js
 - GitHub Actions (CI/CD)
 
-### Couverture des tests (66 tests sur 3 navigateurs)
+### Couverture des tests (93 tests sur 3 navigateurs)
 
 - **Login** — connexion réussie et gestion de l'erreur pour un utilisateur bloqué
 - **Badge panier** — ajout d'un produit, ajout de plusieurs produits, retrait d'un produit
@@ -84,6 +85,7 @@ Suite de tests automatisés de bout en bout pour [SauceDemo](https://www.saucede
 - **Tri des produits** — les 4 options de tri (prix croissant/décroissant, nom A-Z/Z-A), vérifiées via une boucle sur tous les articles
 - **Menu hamburger** — déconnexion, réinitialisation de l'état, lien About, et navigation All Items
 - **Page détail produit** — navigation vers la fiche d'un produit et retour à la liste
+- **Bugs problem_user** — 9 tests documentant des anomalies connues sur le compte `problem_user` (tri cassé, comportement incohérent de l'ajout au panier selon les produits, badge panier ne reflétant pas le contenu réel du panier, IDs de champs dupliqués au checkout faisant que Prénom/Nom s'écrasent mutuellement, lien "About" cassé, fiches produit incohérentes, et plus). Chaque test utilise `test.fail()` de Playwright avec un commentaire explicatif, ce qui l'affiche en vert tant que le bug est présent et le ferait passer au rouge le jour où il est corrigé — une forme de documentation vivante plutôt qu'une simple vérification manuelle ponctuelle
 
 ### Refactorisation en cours : Page Object Model (POM)
 
