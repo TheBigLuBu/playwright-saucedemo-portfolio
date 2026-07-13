@@ -206,7 +206,6 @@ test.describe('Problem_user bugs', () => {
     await page.locator('[data-test="about-sidebar-link"]').click();
     await expect(page).toHaveURL('https://saucelabs.com/error/404');
 });
-});
 test('Items Pictures should match each item', async ({ page }) => {
   test.fail(); // This test should fail, as the only pictures displayed is the same for all the items.
   await page.locator('[data-test="username"]').fill('problem_user');
@@ -241,7 +240,6 @@ test('3 known-working products can be added to cart', async ({ page }) => {
 
   await expect(page.locator('[data-test="shopping-cart-badge"]')).toHaveText('3');
 });
-
 test('All 6 products should be addable to cart', async ({ page }) => {
   test.fail(); // This test should fail as only some of the items are added to cart
   await page.locator('[data-test="username"]').fill('problem_user');
@@ -314,4 +312,20 @@ test('Add to cart from item detail page should reliably update the cart', async 
   //Number(badgeText). Le badge renvoie du texte (.textContent() donne toujours une chaîne, genre "4"),
   //  mais actualItemsInCart (résultat de .count()) est un vrai nombre. Pour comparer les deux avec .toBe(...),
   //  il faut qu'ils soient du même type — Number(...) convertit le texte "4" en nombre 4.
+});
+test('First Name and Last Name fields should not overwrite each other', async ({ page }) => {
+  test.fail(); // This test should fail because typing in Last Name overwrites First Name (shared field id)
+
+  await page.locator('[data-test="username"]').fill('problem_user');
+  await page.locator('[data-test="login-button"]').click();
+  await page.locator('[data-test="add-to-cart-sauce-labs-backpack"]').click();
+  await page.locator('[data-test="shopping-cart-link"]').click();
+  await page.locator('[data-test="checkout"]').click();
+
+  await page.locator('[data-test="firstName"]').fill('Sebastien');
+  await page.locator('[data-test="lastName"]').fill('Chup');
+
+  expect(await page.locator('[data-test="firstName"]').inputValue()).toBe('Sebastien');
+  expect(await page.locator('[data-test="lastName"]').inputValue()).toBe('Chup');
+});
 });
