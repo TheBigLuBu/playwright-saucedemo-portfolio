@@ -3,17 +3,20 @@ import { LoginPage } from '../pages/LoginPage';
 import { InventoryPage } from '../pages/InventoryPage';
 import { CheckoutPage } from '../pages/CheckoutPage';
 
+test.use({ storageState: 'playwright/.auth/standard-user.json' })
+
 test.describe('Checkout', () => {
   let loginPage: LoginPage;
   let inventoryPage: InventoryPage;
   let checkoutPage: CheckoutPage;
 
-  test.beforeEach(async ({ page }) => {
+test.beforeEach(async ({ page }) => {
     loginPage = new LoginPage(page);
     inventoryPage = new InventoryPage(page);
     checkoutPage = new CheckoutPage(page);
-    await loginPage.goto();
-    await loginPage.login('standard_user', 'secret_sauce');
+    //await loginPage.goto(); ===> Enlevé suite à l'ajout du test.use au-dessus afin d'éviter de retester ça à chaque fois
+    //await loginPage.login('standard_user', 'secret_sauce'); ==> Enlevé suite à l'ajout du test.use au-dessus afin d'éviter de retester ça à chaque fois 
+    await page.goto('https://www.saucedemo.com/inventory.html'); // ajouté suite au nouveau test.use
   });
 
   test('First name missing', async ({ page }) => {
@@ -95,8 +98,9 @@ test.describe('Continue Shopping', () => {
     loginPage = new LoginPage(page);
     inventoryPage = new InventoryPage(page);
     checkoutPage = new CheckoutPage(page);
-    await loginPage.goto();
-    await loginPage.login('standard_user', 'secret_sauce');
+    //await loginPage.goto(); ===> Enlevé suite à l'ajout du test.use au-dessus afin d'éviter de retester ça à chaque fois
+    //await loginPage.login('standard_user', 'secret_sauce'); ==> Enlevé suite à l'ajout du test.use au-dessus afin d'éviter de retester ça à chaque fois 
+    await page.goto('https://www.saucedemo.com/inventory.html'); // ajouté suite au nouveau test.use
   });
 
   test('Go back to Shopping items list', async ({ page }) => {
