@@ -198,7 +198,7 @@ test.describe('Item Detail Page', () => {
     await expect(page).toHaveURL('https://www.saucedemo.com/inventory.html');
 });
 });
-test.describe('Problem_user bugs', () => {
+test.describe.skip('Problem_user bugs', () => {
   test('About button', async ({ page }) => {
     await page.locator('[data-test="username"]').fill('problem_user');
     await page.locator('[data-test="login-button"]').click();

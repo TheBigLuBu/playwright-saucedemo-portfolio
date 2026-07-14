@@ -23,7 +23,11 @@ Automated end-to-end test suite for [SauceDemo](https://www.saucedemo.com), a de
 - **Sorting** — all 4 sort options (price low-to-high, high-to-low, name A-Z, Z-A), verified with a loop over every item
 - **Hamburger menu** — logout, reset app state, About link, and All Items navigation
 - **Item detail page** — navigating to a product's detail page and back to the product list
-- **Problem_user bugs** — 9 tests documenting known defects on the `problem_user` account (broken sort, inconsistent add-to-cart behaviour across products, cart badge not reflecting actual cart contents, duplicated field IDs on checkout causing First/Last Name to overwrite each other, broken "About" link, mismatched product detail pages, and more). Each test uses Playwright's `test.fail()` with an explanatory comment, so it reports green while the bug is present and would flag red the day it gets fixed — acting as living regression documentation rather than a one-off manual check
+- **Problem_user bugs** — 9 tests documenting known defects on the `problem_user` account (broken sort, inconsistent add-to-cart behaviour across products, cart badge not reflecting actual cart contents, duplicated field IDs on checkout causing First/Last Name to overwrite each other, broken "About" link, mismatched product detail pages, and more). Each test uses Playwright's `test.fail()` with an explanatory comment, so it reports green while the bug is present and would flag red the day it gets fixed — acting as living regression documentation rather than a one-off manual check. Lives in its own file (`tests/problem-user.spec.ts`); the original copy is kept, skipped, in `example.spec.ts` as a historical reference
+
+### Faster runs with storageState
+
+`tests/auth.setup.ts` logs in once per account (`standard_user`, `problem_user`) and saves the authenticated session to `playwright/.auth/*.json`. Spec files that don't need to test the login form itself reuse that saved session via `test.use({ storageState: '...' })`, skipping the login flow on every single test. This is configured as its own Playwright project (`setup`) that the browser projects depend on, so it re-runs automatically before every test run — no manual step needed. Session files are git-ignored, since they contain live authentication cookies.
 
 ### Ongoing refactor: Page Object Model (POM)
 
@@ -57,10 +61,13 @@ pages/
   InventoryPage.ts   # locators & actions for the product list / cart badge
   CheckoutPage.ts     # locators & actions for the checkout flow
 tests/
+  auth.setup.ts       # logs in once per account, saves session state for reuse
   login.spec.ts      # login tests (uses LoginPage)
-  badge.spec.ts       # cart badge tests (uses LoginPage + InventoryPage)
-  checkout.spec.ts    # checkout tests (uses LoginPage + InventoryPage + CheckoutPage)
-  example.spec.ts     # remaining test suites, not yet migrated to POM
+  badge.spec.ts       # cart badge tests (uses InventoryPage, reuses standard_user session)
+  checkout.spec.ts    # checkout tests (uses InventoryPage + CheckoutPage, reuses standard_user session)
+  problem-user.spec.ts # problem_user bug suite (reuses problem_user session)
+  example.spec.ts     # remaining test suites not yet migrated to POM; also keeps the original problem_user tests, skipped, as a historical reference
+playwright/.auth/     # generated session files (git-ignored)
 playwright.config.ts
 .github/workflows/playwright.yml   # CI/CD pipeline configuration
 
@@ -85,7 +92,11 @@ Suite de tests automatisés de bout en bout pour [SauceDemo](https://www.saucede
 - **Tri des produits** — les 4 options de tri (prix croissant/décroissant, nom A-Z/Z-A), vérifiées via une boucle sur tous les articles
 - **Menu hamburger** — déconnexion, réinitialisation de l'état, lien About, et navigation All Items
 - **Page détail produit** — navigation vers la fiche d'un produit et retour à la liste
-- **Bugs problem_user** — 9 tests documentant des anomalies connues sur le compte `problem_user` (tri cassé, comportement incohérent de l'ajout au panier selon les produits, badge panier ne reflétant pas le contenu réel du panier, IDs de champs dupliqués au checkout faisant que Prénom/Nom s'écrasent mutuellement, lien "About" cassé, fiches produit incohérentes, et plus). Chaque test utilise `test.fail()` de Playwright avec un commentaire explicatif, ce qui l'affiche en vert tant que le bug est présent et le ferait passer au rouge le jour où il est corrigé — une forme de documentation vivante plutôt qu'une simple vérification manuelle ponctuelle
+- **Bugs problem_user** — 9 tests documentant des anomalies connues sur le compte `problem_user` (tri cassé, comportement incohérent de l'ajout au panier selon les produits, badge panier ne reflétant pas le contenu réel du panier, IDs de champs dupliqués au checkout faisant que Prénom/Nom s'écrasent mutuellement, lien "About" cassé, fiches produit incohérentes, et plus). Chaque test utilise `test.fail()` de Playwright avec un commentaire explicatif, ce qui l'affiche en vert tant que le bug est présent et le ferait passer au rouge le jour où il est corrigé — une forme de documentation vivante plutôt qu'une simple vérification manuelle ponctuelle. Vit dans son propre fichier (`tests/problem-user.spec.ts`) ; la copie d'origine est conservée, skippée, dans `example.spec.ts` à titre de référence historique
+
+### Exécution plus rapide grâce à storageState
+
+`tests/auth.setup.ts` se connecte une fois par compte (`standard_user`, `problem_user`) et sauvegarde la session authentifiée dans `playwright/.auth/*.json`. Les fichiers de test qui n'ont pas besoin de tester le formulaire de login lui-même réutilisent cette session sauvegardée via `test.use({ storageState: '...' })`, ce qui évite de repasser par le login à chaque test. Ceci est configuré comme un projet Playwright à part entière (`setup`) dont dépendent les projets navigateurs, donc il se relance automatiquement avant chaque exécution — aucune étape manuelle nécessaire. Les fichiers de session sont exclus de Git, car ils contiennent des cookies d'authentification actifs.
 
 ### Refactorisation en cours : Page Object Model (POM)
 
@@ -119,9 +130,12 @@ pages/
   InventoryPage.ts   # sélecteurs & actions de la liste produits / badge panier
   CheckoutPage.ts     # sélecteurs & actions du parcours de checkout
 tests/
+  auth.setup.ts       # connexion unique par compte, sauvegarde la session pour réutilisation
   login.spec.ts      # tests de login (utilise LoginPage)
-  badge.spec.ts       # tests du badge panier (utilise LoginPage + InventoryPage)
-  checkout.spec.ts    # tests de checkout (utilise LoginPage + InventoryPage + CheckoutPage)
-  example.spec.ts     # groupes de tests restants, pas encore migrés vers le POM
+  badge.spec.ts       # tests du badge panier (utilise InventoryPage, réutilise la session standard_user)
+  checkout.spec.ts    # tests de checkout (utilise InventoryPage + CheckoutPage, réutilise la session standard_user)
+  problem-user.spec.ts # suite de bugs problem_user (réutilise la session problem_user)
+  example.spec.ts     # groupes de tests restants pas encore migrés vers le POM ; conserve aussi les tests problem_user originaux, skippés, à titre de référence historique
+playwright/.auth/     # fichiers de session générés (exclus de Git)
 playwright.config.ts
 .github/workflows/playwright.yml   # configuration du pipeline CI/CD
