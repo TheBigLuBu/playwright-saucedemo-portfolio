@@ -199,6 +199,7 @@ test.describe('Item Detail Page', () => {
 });
 });
 test.describe.skip('Problem_user bugs', () => {
+  // sert ici à skipper ces tests puisqu'ils existent dans un fichier dédié "problem_user.spect.ts".
   test('About button', async ({ page }) => {
     await page.locator('[data-test="username"]').fill('problem_user');
     await page.locator('[data-test="login-button"]').click();

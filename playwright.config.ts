@@ -29,7 +29,9 @@ export default defineConfig({
     // baseURL: 'http://localhost:3000',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
+    trace: 'retain-on-failure',
+    //trace: 'on-first-retry', La valeur de base à remplacer par la ligne du-dessus si onveux que trace Viewer travaille dès qu'on a une erreur.
+    // 'on-first-retry' (l'ancien réglage) : ne collecte la trace que si le test échoue et qu'il y a un retry configuré (donc jamais en local)
   },
 
   /* Configure projects for major browsers */
