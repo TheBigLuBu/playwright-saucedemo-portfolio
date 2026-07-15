@@ -14,7 +14,7 @@ Automated end-to-end test suite for [SauceDemo](https://www.saucedemo.com), a de
 - Node.js
 - GitHub Actions (CI/CD)
 
-### Test coverage (93 tests across 3 browsers)
+### Test coverage (93 UI tests across 3 browsers + a dedicated API suite)
 
 - **Login** — successful login and locked-out user error handling
 - **Cart badge** — adding a single product, adding multiple products, removing a product
@@ -24,6 +24,30 @@ Automated end-to-end test suite for [SauceDemo](https://www.saucedemo.com), a de
 - **Hamburger menu** — logout, reset app state, About link, and All Items navigation
 - **Item detail page** — navigating to a product's detail page and back to the product list
 - **Problem_user bugs** — 9 tests documenting known defects on the `problem_user` account (broken sort, inconsistent add-to-cart behaviour across products, cart badge not reflecting actual cart contents, duplicated field IDs on checkout causing First/Last Name to overwrite each other, broken "About" link, mismatched product detail pages, and more). Each test uses Playwright's `test.fail()` with an explanatory comment, so it reports green while the bug is present and would flag red the day it gets fixed — acting as living regression documentation rather than a one-off manual check. Lives in its own file (`tests/problem-user.spec.ts`); the original copy is kept, skipped, in `example.spec.ts` as a historical reference
+- **API tests** (`tests/api/`) — see dedicated section below
+
+### API tests
+
+A separate suite covers API-level testing against the public [restful-booker](https://restful-booker.herokuapp.com) API, using Playwright's built-in `APIRequestContext` (the `request` fixture) — no browser involved.
+
+| File | Coverage |
+|---|---|
+| `booking.spec.ts` | `GET` (read), `POST` (create), `PUT` (full update), `PATCH` (partial update), `DELETE` — each with response validation |
+| `auth.spec.ts` | `POST /auth` — token retrieval for authenticated requests |
+
+Key design points:
+- Each test is **self-contained**: rather than relying on hardcoded booking IDs that may or may not exist on the shared public API, tests create their own booking on the fly and operate on the ID returned by the API. This keeps the suite reliable and repeatable regardless of what other users have done on the API.
+- Protected operations (`PUT`, `PATCH`, `DELETE`) authenticate by sending the token retrieved from `/auth` as a `Cookie` header.
+- Response bodies are validated with `toEqual()` for full deep-equality checks (not just spot-checking a single field), in addition to status checks (`toBeTruthy()` / `toBeOK()`).
+
+API tests run in their own Playwright project (`api`), configured without browser emulation, since there's nothing to render. The `chromium`/`firefox`/`webkit` projects explicitly `testIgnore` the `tests/api/` folder, so API tests execute exactly once instead of being triplicated across browsers.
+
+```bash
+# Run only the API suite
+npx playwright test tests/api
+```
+
+**Next up:** factor out the repeated "create a booking" step across tests using `beforeEach`, and add coverage for error cases (401, 404, invalid payloads).
 
 ### Faster runs with storageState
 
@@ -67,8 +91,11 @@ tests/
   checkout.spec.ts    # checkout tests (uses InventoryPage + CheckoutPage, reuses standard_user session)
   problem-user.spec.ts # problem_user bug suite (reuses problem_user session)
   example.spec.ts     # remaining test suites not yet migrated to POM; also keeps the original problem_user tests, skipped, as a historical reference
+  api/
+    booking.spec.ts   # CRUD suite against restful-booker (GET/POST/PUT/PATCH/DELETE)
+    auth.spec.ts       # restful-booker authentication (token retrieval)
 playwright/.auth/     # generated session files (git-ignored)
-playwright.config.ts
+playwright.config.ts   # includes a dedicated "api" project (no browser), with testIgnore on chromium/firefox/webkit for tests/api/
 .github/workflows/playwright.yml   # CI/CD pipeline configuration
 
 ---
@@ -83,7 +110,7 @@ Suite de tests automatisés de bout en bout pour [SauceDemo](https://www.saucede
 - Node.js
 - GitHub Actions (CI/CD)
 
-### Couverture des tests (93 tests sur 3 navigateurs)
+### Couverture des tests (93 tests UI sur 3 navigateurs + une suite API dédiée)
 
 - **Login** — connexion réussie et gestion de l'erreur pour un utilisateur bloqué
 - **Badge panier** — ajout d'un produit, ajout de plusieurs produits, retrait d'un produit
@@ -93,6 +120,30 @@ Suite de tests automatisés de bout en bout pour [SauceDemo](https://www.saucede
 - **Menu hamburger** — déconnexion, réinitialisation de l'état, lien About, et navigation All Items
 - **Page détail produit** — navigation vers la fiche d'un produit et retour à la liste
 - **Bugs problem_user** — 9 tests documentant des anomalies connues sur le compte `problem_user` (tri cassé, comportement incohérent de l'ajout au panier selon les produits, badge panier ne reflétant pas le contenu réel du panier, IDs de champs dupliqués au checkout faisant que Prénom/Nom s'écrasent mutuellement, lien "About" cassé, fiches produit incohérentes, et plus). Chaque test utilise `test.fail()` de Playwright avec un commentaire explicatif, ce qui l'affiche en vert tant que le bug est présent et le ferait passer au rouge le jour où il est corrigé — une forme de documentation vivante plutôt qu'une simple vérification manuelle ponctuelle. Vit dans son propre fichier (`tests/problem-user.spec.ts`) ; la copie d'origine est conservée, skippée, dans `example.spec.ts` à titre de référence historique
+- **Tests API** (`tests/api/`) — voir section dédiée ci-dessous
+
+### Tests API
+
+Une suite distincte couvre les tests au niveau API contre l'API publique [restful-booker](https://restful-booker.herokuapp.com), en utilisant l'`APIRequestContext` natif de Playwright (fixture `request`) — aucun navigateur impliqué.
+
+| Fichier | Contenu |
+|---|---|
+| `booking.spec.ts` | `GET` (lecture), `POST` (création), `PUT` (modification complète), `PATCH` (modification partielle), `DELETE` — chacun avec vérification de la réponse |
+| `auth.spec.ts` | `POST /auth` — récupération du token pour les requêtes authentifiées |
+
+Points clés de conception :
+- Chaque test est **autonome** : plutôt que de dépendre d'identifiants de réservation codés en dur (qui peuvent exister ou non sur une API publique partagée), les tests créent leur propre réservation à la volée et opèrent sur l'ID renvoyé par l'API. La suite reste ainsi fiable et répétable, indépendamment de ce que d'autres utilisateurs ont pu faire sur l'API.
+- Les opérations protégées (`PUT`, `PATCH`, `DELETE`) s'authentifient en transmettant le token récupéré via `/auth` dans un header `Cookie`.
+- Les corps de réponse sont vérifiés avec `toEqual()` pour une comparaison complète en profondeur (et pas seulement un champ isolé), en complément des vérifications de statut (`toBeTruthy()` / `toBeOK()`).
+
+Les tests API tournent dans leur propre projet Playwright (`api`), configuré sans émulation de navigateur puisqu'il n'y a rien à afficher. Les projets `chromium`/`firefox`/`webkit` excluent explicitement le dossier `tests/api/` via `testIgnore`, afin que les tests API s'exécutent une seule fois plutôt que d'être triplés sur les 3 navigateurs.
+
+```bash
+# Lancer uniquement la suite API
+npx playwright test tests/api
+```
+
+**Prochaine étape :** factoriser l'étape répétée de création de réservation via `beforeEach`, et ajouter une couverture des cas d'erreur (401, 404, données invalides).
 
 ### Exécution plus rapide grâce à storageState
 
@@ -136,6 +187,9 @@ tests/
   checkout.spec.ts    # tests de checkout (utilise InventoryPage + CheckoutPage, réutilise la session standard_user)
   problem-user.spec.ts # suite de bugs problem_user (réutilise la session problem_user)
   example.spec.ts     # groupes de tests restants pas encore migrés vers le POM ; conserve aussi les tests problem_user originaux, skippés, à titre de référence historique
+  api/
+    booking.spec.ts   # suite CRUD contre restful-booker (GET/POST/PUT/PATCH/DELETE)
+    auth.spec.ts       # authentification restful-booker (récupération de token)
 playwright/.auth/     # fichiers de session générés (exclus de Git)
-playwright.config.ts
+playwright.config.ts   # inclut un projet "api" dédié (sans navigateur), avec testIgnore sur chromium/firefox/webkit pour tests/api/
 .github/workflows/playwright.yml   # configuration du pipeline CI/CD

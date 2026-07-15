@@ -44,17 +44,31 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+       testIgnore: /.*api\/.*\.spec\.ts/,
+       dependencies: ['setup'], 
     },
 
     {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
+      testIgnore: /.*api\/.*\.spec\.ts/,
+      dependencies: ['setup'], 
     },
 
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
+      testIgnore: /.*api\/.*\.spec\.ts/,
+      dependencies: ['setup'], 
     },
+
+    {
+      name: 'api',
+    testMatch: /.*api\/.*\.spec\.ts/,
+    // pas de use avec devices ici
+    },
+  // Mes projets chromium/firefox/webkit existants,
+  // mais il faudra les empêcher de reprendre les tests api...
 
     /* Test against mobile viewports. */
     // {
