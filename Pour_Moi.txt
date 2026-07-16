@@ -1,0 +1,156 @@
+await expect( ELEMENT_A_VERIFIER ).toHaveText( TEXTE_ATTENDU );
+
+TESTER UN LOGIN REUSSI : 
+
+import { test, expect } from '@playwright/test';
+
+test('login réussi', async ({ page }) => {
+  await page.goto('https://www.saucedemo.com');
+  await page.locator('[data-test="username"]').fill('standard_user');
+  await page.locator('[data-test="password"]').fill('secret_sauce');
+  await page.locator('[data-test="login-button"]').click();
+  await expect(page).toHaveURL('https://www.saucedemo.com/inventory.html');
+  await expect(page.locator('[data-test="title"]')).toHaveText('Products');
+});
+
+TESTER UN LOGIN FAILED AVEC MESSAGE D'ERREUR :
+
+import { test, expect } from '@playwright/test';
+test('login failed', async ({ page }) => {
+  await page.goto('https://www.saucedemo.com');
+  await page.locator('[data-test="username"]').fill('locked_out_user');
+  await page.locator('[data-test="password"]').fill('secret_sauce');
+  await page.locator('[data-test="login-button"]').click();
+  await expect(page.locator('[data-test="error"]')).toHaveText('Epic sadface: Sorry, this user has been locked out.');
+});
+
+TESTER L'AJOUT D'UN CHIFFRE DANS LE PANIER (+1)
+
+test('should display cart badge with count 1 after adding one product', async ({ page }) => {
+await page.locator('[data-test="username"]').fill('standard_user');
+await page.locator('[data-test="login-button"]').click();
+await page.locator('[data-test="add-to-cart-sauce-labs-backpack"]').click();
+await expect(page.locator('[data-test="shopping-cart-badge"]')).toHaveText('1');
+});
+
+FAIRE LE TRI DES PRIX DANS UNE BOUCLE :
+for (let i = 0; i < prices.length - 1; i++) {
+  expect(prices[i]).toBeLessThanOrEqual(prices[i + 1]);
+}
+Décodage ligne par ligne :
+
+for (let i = 0; i < prices.length - 1; i++) → une boucle qui répète le code à l'intérieur, en faisant varier i de 0 jusqu'à l'avant-dernier élément de la liste (length - 1 car on compare toujours avec "le suivant", donc pas besoin d'aller jusqu'au tout dernier)
+prices[i] → l'élément à la position i (ex: si i = 0, c'est le premier prix)
+prices[i + 1] → l'élément juste après (le "suivant")
+expect(prices[i]).toBeLessThanOrEqual(prices[i + 1]) → l'assertion Playwright qui vérifie "plus petit ou égal", exactement ce que tu viens de formuler
+
+CI/CD : 
+CI = Continuous Integration (Intégration Continue)
+L'idée : à chaque fois que du code est modifié et envoyé (push), on intègre automatiquement ce changement au reste du projet et on vérifie immédiatement que tout fonctionne encore ensemble — via des tests automatisés (exactement ce que tu viens de voir tourner).
+Le but : détecter les problèmes tout de suite, pas des jours plus tard quand plusieurs personnes ont déjà ajouté du code par-dessus.
+CD = Continuous Deployment/Delivery (Déploiement/Livraison Continue)
+Une fois que les tests sont passés avec succès, cette partie automatise la mise en production (ou la préparation à la mise en production) du code — sans qu'un humain ait besoin de cliquer manuellement pour déployer.
+As-tu de l'expérience avec le CI/CD ?" — tu peux répondre que tu l'as vécu concrètement côté process (QA + release), et que tu es en train de monter en compétence sur la partie configuration technique elle-même (comme aujourd'hui avec GitHub Actions), ce qui est un vrai plus différenciant par rapport à un profil purement QA manuel ou purement dev.
+
+Changer les données de la moulinette (.yml)
+Exemple pour "tous les jours à 2h du matin (heure UTC)" :
+yamlschedule:
+  - cron: '0 2 * * *'
+Décodage rapide de la syntaxe cron (5 champs, séparés par des espaces) :
+minute heure jour-du-mois mois jour-de-la-semaine
+0       2     *            *    *
+Le * veut dire "n'importe lequel" — donc ici : "à la minute 0, de l'heure 2, n'importe quel jour, n'importe quel mois, n'importe quel jour de semaine" = tous les jours à 2h du matin.
+
+A mettre sous :
+name: Playwright Tests
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  schedule:
+    - cron: '0 2 * * *'
+Point d'attention sur l'indentation : en YAML, l'indentation (les espaces) a une vraie signification — ce n'est pas juste esthétique comme en JavaScript. schedule: doit être aligné exactement au même niveau que push: et pull_request: (même nombre d'espaces avant), sinon GitHub ne comprendra pas la structure du fichier.
+Un point important à connaître avant de valider : l'heure 2 dans '0 2 * * *' est en UTC (temps universel), pas en heure française. En été (comme maintenant, en juillet), la France est en UTC+2 — donc 2h UTC = 4h du matin, heure française. Si tu veux vraiment "tous les jours à 2h du matin heure française", il faudrait plutôt mettre '0 0 * * *' (minuit UTC = 2h du matin en France l'été).
+
+Lorsqu'on veut créer un ficher qui fasse faire un test sur des login et que ça ne le relance pas à chaque fois il faut : 
+1. On peut donc créer le fichier auth.setup.ts dans tests/.
+
+import { test as setup } from '@playwright/test';
+
+const standardUserFile = 'playwright/.auth/standard-user.json';
+
+setup('authenticate as standard_user', async ({ page }) => {
+  await page.goto('https://www.saucedemo.com');
+  await page.locator('[data-test="username"]').fill('standard_user');
+  await page.locator('[data-test="password"]').fill('secret_sauce');
+  await page.locator('[data-test="login-button"]').click();
+  await page.waitForURL('https://www.saucedemo.com/inventory.html');
+
+  await page.context().storageState({ path: standardUserFile });
+});
+
+const problemUserFile = 'playwright/.auth/problem-user.json';
+
+setup('authenticate as problem_user', async ({ page }) => {
+  await page.goto('https://www.saucedemo.com');
+  await page.locator('[data-test="username"]').fill('problem_user');
+  await page.locator('[data-test="password"]').fill('secret_sauce');
+  await page.locator('[data-test="login-button"]').click();
+  await page.waitForURL('https://www.saucedemo.com/inventory.html');
+
+  await page.context().storageState({ path: problemUserFile });
+});
+
+2. Ajoute le nouveau 'projet' dans le "playwright.config.ts"
+
+projects: [
+  {
+    name: 'setup',
+    testMatch: /.*\.setup\.ts/,
+  },
+
+  {
+    name: 'chromium',
+    use: { ...devices['Desktop Chrome'] },
+    dependencies: ['setup'],
+  },
+
+  {
+    name: 'firefox',
+    use: { ...devices['Desktop Firefox'] },
+    dependencies: ['setup'],
+  },
+
+  {
+    name: 'webkit',
+    use: { ...devices['Desktop Safari'] },
+    dependencies: ['setup'],
+  },
+],
+
+// Décortiquons les deux nouveautés :
+
+- testMatch: /.*\.setup\.ts/ : ça dit à Playwright "ce projet ne doit exécuter que les fichiers qui se terminent par .setup.ts" (donc uniquement auth.setup.ts, pas tes autres .spec.ts). La syntaxe /.../  est une expression régulière — un "motif" pour rechercher du texte, ici "n'importe quel nom de fichier terminant par .setup.ts".
+- dependencies: ['setup'] : ça dit à Playwright "avant de lancer les tests de ce projet (chromium/firefox/webkit), exécute d'abord le projet nommé setup". C'est ce qui garantit que les fichiers JSON de session existent avant que tes vrais tests ne démarrent.
+
+Si jamais, il y a un souci d'erreur en tentant de tester avec un timeout, ne pas hésiter à lancer cette ligne dans le PowerShell (pour refresh le token) :
+npx playwright test --project=setup
+
+
+API
+CRUD, c'est un acronyme qui désigne les 4 opérations de base qu'on fait sur des données, dans à peu près n'importe quel système (base de données, API, etc.) :
+
+Create → créer une donnée (chez toi : le POST /booking)
+Read → lire une donnée (chez toi : le GET /booking)
+Update → modifier une donnée (chez toi : le PUT et le PATCH)
+Delete → supprimer une donnée (chez toi : le DELETE /booking/{id})
+
+Différence entre tests UI et API : 
+Ce que tu as fait est déjà la bonne approche : deux projets distincts qui montrent que tu sais faire les deux, sans chercher à faire du 1-pour-1 artificiel. Si un recruteur te demande "comment tu décides quoi tester en UI vs en API", ta réponse pourrait être : "je teste en API tout ce qui concerne la donnée et la logique métier, et je réserve l'UI aux parcours utilisateurs critiques et aux vérifications purement visuelles/interactives."
+ 
+
+
+
+
+
