@@ -37,8 +37,14 @@ A separate suite covers API-level testing against the public [restful-booker](ht
 
 Key design points:
 - Each test is **self-contained**: rather than relying on hardcoded booking IDs that may or may not exist on the shared public API, tests create their own booking on the fly and operate on the ID returned by the API. This keeps the suite reliable and repeatable regardless of what other users have done on the API.
+- Setup is centralized in a `test.beforeEach`: a fresh booking is created and an auth token retrieved before every test, with `bookingId`/`token` shared via file-level variables. Individual tests only contain the logic specific to what they're verifying (GET, PUT, PATCH, DELETE), instead of repeating the create + auth steps each time.
 - Protected operations (`PUT`, `PATCH`, `DELETE`) authenticate by sending the token retrieved from `/auth` as a `Cookie` header.
 - Response bodies are validated with `toEqual()` for full deep-equality checks (not just spot-checking a single field), in addition to status checks (`toBeTruthy()` / `toBeOK()`).
+
+**Error-case coverage:**
+- Protected operations (`DELETE`) correctly reject requests with no token or an invalid token (`403`)
+- Fetching a non-existent booking ID returns `404` as expected
+- A documented API quirk: sending a non-numeric `totalprice` on creation is **silently accepted** (`200`) with the field nulled out server-side, instead of being rejected with a `400`. This is captured as a `test.fail()` test — living regression documentation that reports green while the quirk exists and would flag red if the API's validation is tightened
 
 API tests run in their own Playwright project (`api`), configured without browser emulation, since there's nothing to render. The `chromium`/`firefox`/`webkit` projects explicitly `testIgnore` the `tests/api/` folder, so API tests execute exactly once instead of being triplicated across browsers.
 
@@ -46,8 +52,6 @@ API tests run in their own Playwright project (`api`), configured without browse
 # Run only the API suite
 npx playwright test tests/api
 ```
-
-**Next up:** factor out the repeated "create a booking" step across tests using `beforeEach`, and add coverage for error cases (401, 404, invalid payloads).
 
 ### Faster runs with storageState
 
@@ -133,8 +137,14 @@ Une suite distincte couvre les tests au niveau API contre l'API publique [restfu
 
 Points clés de conception :
 - Chaque test est **autonome** : plutôt que de dépendre d'identifiants de réservation codés en dur (qui peuvent exister ou non sur une API publique partagée), les tests créent leur propre réservation à la volée et opèrent sur l'ID renvoyé par l'API. La suite reste ainsi fiable et répétable, indépendamment de ce que d'autres utilisateurs ont pu faire sur l'API.
+- La préparation est centralisée dans un `test.beforeEach` : une nouvelle réservation est créée et un token d'authentification récupéré avant chaque test, `bookingId`/`token` étant partagés via des variables déclarées au niveau du fichier. Chaque test ne contient plus que la logique spécifique à ce qu'il vérifie (GET, PUT, PATCH, DELETE), au lieu de répéter à chaque fois les étapes de création et d'authentification.
 - Les opérations protégées (`PUT`, `PATCH`, `DELETE`) s'authentifient en transmettant le token récupéré via `/auth` dans un header `Cookie`.
 - Les corps de réponse sont vérifiés avec `toEqual()` pour une comparaison complète en profondeur (et pas seulement un champ isolé), en complément des vérifications de statut (`toBeTruthy()` / `toBeOK()`).
+
+**Couverture des cas d'erreur :**
+- Les opérations protégées (`DELETE`) rejettent correctement les requêtes sans token ou avec un token invalide (`403`)
+- La récupération d'un id de réservation inexistant renvoie bien `404`
+- Une particularité de l'API documentée : envoyer un `totalprice` non numérique à la création est **accepté silencieusement** (`200`), le champ étant remis à `null` côté serveur au lieu d'être rejeté avec un `400`. Ce comportement est capturé via un test `test.fail()` — une documentation vivante qui s'affiche en vert tant que la particularité existe, et passerait au rouge si la validation de l'API venait à être renforcée
 
 Les tests API tournent dans leur propre projet Playwright (`api`), configuré sans émulation de navigateur puisqu'il n'y a rien à afficher. Les projets `chromium`/`firefox`/`webkit` excluent explicitement le dossier `tests/api/` via `testIgnore`, afin que les tests API s'exécutent une seule fois plutôt que d'être triplés sur les 3 navigateurs.
 
@@ -142,8 +152,6 @@ Les tests API tournent dans leur propre projet Playwright (`api`), configuré sa
 # Lancer uniquement la suite API
 npx playwright test tests/api
 ```
-
-**Prochaine étape :** factoriser l'étape répétée de création de réservation via `beforeEach`, et ajouter une couverture des cas d'erreur (401, 404, données invalides).
 
 ### Exécution plus rapide grâce à storageState
 

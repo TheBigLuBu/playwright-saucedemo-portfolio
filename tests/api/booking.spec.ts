@@ -282,3 +282,50 @@ test('delete a reservation', async ({ request }) => {
 
   expect(deleteResponse.ok()).toBeTruthy();
 });
+test('DELETE without a token should fail', async ({ request }) => {
+  const response = await request.delete(`https://restful-booker.herokuapp.com/booking/${bookingId}`);
+  // pas de headers du tout ici : aucun token envoyé
+
+  expect(response.status()).toBe(403);
+});
+
+test('DELETE with an invalid token should fail', async ({ request }) => {
+  const response = await request.delete(`https://restful-booker.herokuapp.com/booking/${bookingId}`, {
+    headers: {
+      Cookie: `token=un_faux_token_invalide`
+    }
+  });
+
+  expect(response.status()).toBe(403);
+});
+
+test('GET a non-existent booking should return 404', async ({ request }) => {
+  const response = await request.get('https://restful-booker.herokuapp.com/booking/999999999');
+
+  expect(response.status()).toBe(404);
+});
+test('POST with invalid data silently nulls totalprice instead of rejecting', async ({ request }) => {
+  // Bug/quirk documenté : l'API accepte un totalprice de type texte
+  // au lieu de le rejeter (400), et le remplace silencieusement par null.
+  test.fail();
+
+  const response = await request.post('https://restful-booker.herokuapp.com/booking', {
+    data: {
+      firstname: "Jim",
+      lastname: "Brown",
+      totalprice: "cent onze",
+      depositpaid: true,
+      bookingdates: {
+        checkin: "2024-01-01",
+        checkout: "2024-01-05"
+      },
+      additionalneeds: "Breakfast"
+    }
+  });
+
+  const body = await response.json();
+
+  // Comportement souhaité (qui échoue actuellement) : l'API devrait rejeter
+  // une donnée invalide plutôt que l'accepter avec une valeur corrompue.
+  expect(body.booking.totalprice).not.toBeNull();
+});
