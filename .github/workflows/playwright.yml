@@ -28,7 +28,7 @@ jobs:
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
 
-    - - name: Get last Allure history
+    - name: Get last Allure history
       continue-on-error: true
       run: |
         mkdir -p allure-results/history
