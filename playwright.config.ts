@@ -33,6 +33,8 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'retain-on-failure',
+    screenshot: 'only-on-failure',
+    //video: 'retain-on-failure', ==> A jouter si on souhaite avoir la vidéo de l'exécution du test en cas d'échec. coût en temps/espace disque)
     //trace: 'on-first-retry', La valeur de base à remplacer par la ligne du-dessus si onveux que trace Viewer travaille dès qu'on a une erreur.
     // 'on-first-retry' (l'ancien réglage) : ne collecte la trace que si le test échoue et qu'il y a un retry configuré (donc jamais en local)
   },
