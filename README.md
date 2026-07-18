@@ -13,6 +13,7 @@ Automated end-to-end test suite for [SauceDemo](https://www.saucedemo.com), a de
 - [Playwright](https://playwright.dev/) (TypeScript)
 - Node.js
 - GitHub Actions (CI/CD)
+- [Allure Report](https://allurereport.org/) (test reporting, published automatically to GitHub Pages)
 
 ### Test coverage (93 UI tests across 3 browsers + a dedicated API suite)
 
@@ -21,7 +22,7 @@ Automated end-to-end test suite for [SauceDemo](https://www.saucedemo.com), a de
 - **Checkout** — full purchase flow, validation of each required field (first name, last name, postal code), cancelling an in-progress checkout, and a numeric consistency check (item total + tax = total)
 - **Continue Shopping** — returning to the product list from the cart
 - **Sorting** — all 4 sort options (price low-to-high, high-to-low, name A-Z, Z-A), verified with a loop over every item
-- **Hamburger menu** — logout, reset app state, About link, and All Items navigation
+- **Hamburger menu** — logout, reset app state, About link, and All Items navigation. The menu-opening logic was flaky under parallel execution (WebKit in particular): diagnosed as a CSS transition not yet settled when Playwright checked element stability, plus an occasional click missed under heavy CPU load. Fixed via a reusable `InventoryPage.openHamburgerMenu()` helper that neutralizes the transition and retries the click if needed
 - **Item detail page** — navigating to a product's detail page and back to the product list
 - **Problem_user bugs** — 9 tests documenting known defects on the `problem_user` account (broken sort, inconsistent add-to-cart behaviour across products, cart badge not reflecting actual cart contents, duplicated field IDs on checkout causing First/Last Name to overwrite each other, broken "About" link, mismatched product detail pages, and more). Each test uses Playwright's `test.fail()` with an explanatory comment, so it reports green while the bug is present and would flag red the day it gets fixed — acting as living regression documentation rather than a one-off manual check. Lives in its own file (`tests/problem-user.spec.ts`); the original copy is kept, skipped, in `example.spec.ts` as a historical reference
 - **API tests** (`tests/api/`) — see dedicated section below
@@ -72,6 +73,19 @@ Not yet migrated (still in `tests/example.spec.ts`): Sorting, Hamburger menu, It
 
 Tests run automatically via GitHub Actions on every push, on every pull request, and once a day. Failed runs trigger an email notification. See `.github/workflows/playwright.yml`.
 
+### Test reporting (Allure)
+
+Every CI run generates an [Allure Report](https://allurereport.org/) and publishes it automatically to GitHub Pages — no manual step required, and no need to be at your desk to check the latest results:
+
+**📊 [Live report](https://thebiglubu.github.io/playwright-saucedemo-portfolio/)**
+
+- **Epic / Feature / Story** — every test is tagged with `allure.epic()`, `allure.feature()`, and `allure.story()`, so the report is organized by functional domain (Authentication, Order, Shopping list, Navigation, Known issues) instead of just by file or browser.
+- **Severity** — each test carries a `blocker` / `critical` / `normal` / `minor` / `trivial` rating reflecting its actual business impact (e.g. a broken login is `critical`, a cosmetic sort issue is `minor`), not just whether it happens to fail.
+- **Steps** — tests are broken down into named `test.step()` blocks, so a failure inside a 5-step test immediately points to the exact step that broke, instead of requiring a full re-read of the test code.
+- **Automatic screenshots on failure** (`screenshot: 'only-on-failure'`) — attached directly to the failing test in the report.
+- **Trend history** — the CI workflow retrieves the previous run's history before regenerating the report, so pass-rate and duration trends build up over time instead of resetting on every run.
+- The `problem_user` suite's `test.fail()` tests are deliberately tagged `epic('Known issues')` / `severity('trivial')`, distinct from real regressions — mirroring how a team would flag "known, already-tracked bug" versus "new failure to investigate" in a real bug tracker.
+
 ### Running the tests
 
 npm install
@@ -99,8 +113,8 @@ tests/
     booking.spec.ts   # CRUD suite against restful-booker (GET/POST/PUT/PATCH/DELETE)
     auth.spec.ts       # restful-booker authentication (token retrieval)
 playwright/.auth/     # generated session files (git-ignored)
-playwright.config.ts   # includes a dedicated "api" project (no browser), with testIgnore on chromium/firefox/webkit for tests/api/
-.github/workflows/playwright.yml   # CI/CD pipeline configuration
+playwright.config.ts   # includes a dedicated "api" project (no browser), with testIgnore on chromium/firefox/webkit for tests/api/; trace + screenshot on failure
+.github/workflows/playwright.yml   # CI/CD pipeline configuration: runs tests, generates the Allure report, and publishes it to GitHub Pages
 
 ---
 
@@ -113,6 +127,7 @@ Suite de tests automatisés de bout en bout pour [SauceDemo](https://www.saucede
 - [Playwright](https://playwright.dev/) (TypeScript)
 - Node.js
 - GitHub Actions (CI/CD)
+- [Allure Report](https://allurereport.org/) (reporting de tests, publié automatiquement sur GitHub Pages)
 
 ### Couverture des tests (93 tests UI sur 3 navigateurs + une suite API dédiée)
 
@@ -121,7 +136,7 @@ Suite de tests automatisés de bout en bout pour [SauceDemo](https://www.saucede
 - **Checkout** — parcours d'achat complet, validation de chaque champ obligatoire (prénom, nom, code postal), annulation d'un checkout en cours, et vérification de cohérence numérique (sous-total + taxes = total)
 - **Continue Shopping** — retour à la liste des produits depuis le panier
 - **Tri des produits** — les 4 options de tri (prix croissant/décroissant, nom A-Z/Z-A), vérifiées via une boucle sur tous les articles
-- **Menu hamburger** — déconnexion, réinitialisation de l'état, lien About, et navigation All Items
+- **Menu hamburger** — déconnexion, réinitialisation de l'état, lien About, et navigation All Items. L'ouverture du menu était instable sous exécution parallèle (WebKit en particulier) : diagnostiqué comme une transition CSS pas encore stabilisée au moment où Playwright vérifie la stabilité de l'élément, plus un clic parfois manqué sous forte charge CPU. Corrigé via une méthode réutilisable `InventoryPage.openHamburgerMenu()` qui neutralise la transition et retente le clic si nécessaire
 - **Page détail produit** — navigation vers la fiche d'un produit et retour à la liste
 - **Bugs problem_user** — 9 tests documentant des anomalies connues sur le compte `problem_user` (tri cassé, comportement incohérent de l'ajout au panier selon les produits, badge panier ne reflétant pas le contenu réel du panier, IDs de champs dupliqués au checkout faisant que Prénom/Nom s'écrasent mutuellement, lien "About" cassé, fiches produit incohérentes, et plus). Chaque test utilise `test.fail()` de Playwright avec un commentaire explicatif, ce qui l'affiche en vert tant que le bug est présent et le ferait passer au rouge le jour où il est corrigé — une forme de documentation vivante plutôt qu'une simple vérification manuelle ponctuelle. Vit dans son propre fichier (`tests/problem-user.spec.ts`) ; la copie d'origine est conservée, skippée, dans `example.spec.ts` à titre de référence historique
 - **Tests API** (`tests/api/`) — voir section dédiée ci-dessous
@@ -172,6 +187,19 @@ Pas encore migré (toujours dans `tests/example.spec.ts`) : Tri, Menu hamburger,
 
 Les tests s'exécutent automatiquement via GitHub Actions à chaque push, à chaque pull request, et une fois par jour. Un échec déclenche une notification par email. Voir `.github/workflows/playwright.yml`.
 
+### Reporting de tests (Allure)
+
+Chaque exécution CI génère un [rapport Allure](https://allurereport.org/) et le publie automatiquement sur GitHub Pages — aucune étape manuelle requise, et pas besoin d'être devant son poste pour consulter les derniers résultats :
+
+**📊 [Rapport en ligne](https://thebiglubu.github.io/playwright-saucedemo-portfolio/)**
+
+- **Epic / Feature / Story** — chaque test est annoté via `allure.epic()`, `allure.feature()` et `allure.story()`, ce qui organise le rapport par domaine fonctionnel (Authentication, Order, Shopping list, Navigation, Known issues) plutôt que par simple fichier ou navigateur.
+- **Severity** — chaque test porte un niveau `blocker` / `critical` / `normal` / `minor` / `trivial` reflétant son impact métier réel (ex : un login cassé est `critical`, un souci de tri cosmétique est `minor`), et pas seulement le fait qu'il échoue ou non.
+- **Steps** — les tests sont découpés en blocs `test.step()` nommés, ce qui permet, en cas d'échec dans un test à 5 étapes, d'identifier immédiatement l'étape fautive sans devoir relire tout le code du test.
+- **Captures d'écran automatiques en cas d'échec** (`screenshot: 'only-on-failure'`) — directement attachées au test en échec dans le rapport.
+- **Historique des tendances** — le workflow CI récupère l'historique du run précédent avant de régénérer le rapport, afin que le taux de réussite et les durées s'accumulent dans le temps plutôt que d'être réinitialisés à chaque exécution.
+- Les tests `test.fail()` de la suite `problem_user` sont volontairement annotés `epic('Known issues')` / `severity('trivial')`, distincts des vraies régressions — à l'image de la façon dont une équipe distinguerait, dans un vrai bug tracker, un "bug connu déjà suivi" d'un "nouvel échec à investiguer".
+
 ### Lancer les tests
 
 npm install
@@ -199,5 +227,5 @@ tests/
     booking.spec.ts   # suite CRUD contre restful-booker (GET/POST/PUT/PATCH/DELETE)
     auth.spec.ts       # authentification restful-booker (récupération de token)
 playwright/.auth/     # fichiers de session générés (exclus de Git)
-playwright.config.ts   # inclut un projet "api" dédié (sans navigateur), avec testIgnore sur chromium/firefox/webkit pour tests/api/
-.github/workflows/playwright.yml   # configuration du pipeline CI/CD
+playwright.config.ts   # inclut un projet "api" dédié (sans navigateur), avec testIgnore sur chromium/firefox/webkit pour tests/api/ ; trace + capture d'écran en cas d'échec
+.github/workflows/playwright.yml   # configuration du pipeline CI/CD : exécute les tests, génère le rapport Allure, et le publie sur GitHub Pages
