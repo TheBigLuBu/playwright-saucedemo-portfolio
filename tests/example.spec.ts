@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { InventoryPage } from '../pages/InventoryPage';
+import { allure } from 'allure-playwright';
 
 test.beforeEach(async ({ page }) => { 
     await page.goto('https://www.saucedemo.com'); 
@@ -179,36 +180,87 @@ test.describe('Hamburger button', () => {
  // Un beforeEach instancie inventoryPage avant chaque test (pattern identique à ce qu'on a déjà pour 
  // loginPage dans le fichier de login).
   test('Logout', async ({ page }) => {
+  await allure.epic('Authentication');
+  await allure.feature('Logout');
+  await allure.story('User logged out');
+  await allure.severity('critical');
+
+  await test.step('Log in with a standard user', async () => {
     await page.locator('[data-test="username"]').fill('standard_user');
     await page.locator('[data-test="login-button"]').click();
+  });
+
+  await test.step('Open hamburger menu and log out', async () => {
     await inventoryPage.openHamburgerMenu();
     await page.locator('[data-test="logout-sidebar-link"]').click();
+  });
+
+  await test.step('Verify redirection to the login page', async () => {
     await expect(page).toHaveURL('https://www.saucedemo.com');
   });
+});
 
   test('About button', async ({ page }) => {
+  await allure.epic('Navigation');
+  await allure.feature('Menu');
+  await allure.story('About link');
+  await allure.severity('minor');
+
+  await test.step('Log in with a standard user', async () => {
     await page.locator('[data-test="username"]').fill('standard_user');
     await page.locator('[data-test="login-button"]').click();
+  });
+
+  await test.step('Open hamburger menu and click About', async () => {
     await inventoryPage.openHamburgerMenu();
     await page.locator('[data-test="about-sidebar-link"]').click();
+  });
+
+  await test.step('Verify redirection to Sauce Labs website', async () => {
     await expect(page).toHaveURL('https://saucelabs.com/');
   });
+});
 
-  test('All items button', async ({ page }) => {
+test('All items button', async ({ page }) => {
+  await allure.epic('Navigation');
+  await allure.feature('Menu');
+  await allure.story('All items button');
+  await allure.severity('minor');
+
+  await test.step('Log in with a standard user', async () => {
     await page.locator('[data-test="username"]').fill('standard_user');
     await page.locator('[data-test="login-button"]').click();
-    await inventoryPage.openHamburgerMenu();
-    await page.locator('[data-test="inventory-sidebar-link"]').click();
-    await expect(page).toHaveURL('https://www.saucedemo.com/inventory.html');
   });
 
-  test('Is Reset App state working properly', async ({ page }) => {
+  await test.step('Open hamburger menu and click All Items', async () => {
+    await inventoryPage.openHamburgerMenu();
+    await page.locator('[data-test="inventory-sidebar-link"]').click();
+  });
+
+  await test.step('Verify redirection to the inventory page', async () => {
+    await expect(page).toHaveURL('https://www.saucedemo.com/inventory.html');
+  });
+});
+
+test('Is Reset App state working properly', async ({ page }) => {
+  await allure.epic('Shopping list');
+  await allure.feature('Cart');
+  await allure.story('Reset button');
+  await allure.severity('normal');
+
+  await test.step('Log in and add a product to the cart', async () => {
     await page.locator('[data-test="username"]').fill('standard_user');
     await page.locator('[data-test="login-button"]').click();
     await page.locator('[data-test="add-to-cart-sauce-labs-backpack"]').click();
     await expect(page.locator('[data-test="shopping-cart-badge"]')).toHaveText('1');
+  });
+
+  await test.step('Open hamburger menu and click Reset App State', async () => {
     await inventoryPage.openHamburgerMenu();
     await page.locator('[data-test="reset-sidebar-link"]').click();
+  });
+
+  await test.step('Verify the cart badge disappears', async () => {
     await expect(page.locator('[data-test="shopping-cart-badge"]')).not.toBeVisible();
   });
 });
@@ -366,5 +418,6 @@ test('First Name and Last Name fields should not overwrite each other', async ({
 
   expect(await page.locator('[data-test="firstName"]').inputValue()).toBe('Sebastien');
   expect(await page.locator('[data-test="lastName"]').inputValue()).toBe('Chup');
-});
+    });
+  });
 });
